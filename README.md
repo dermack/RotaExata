@@ -15,7 +15,7 @@ Backend Node.js com Express e PostgreSQL para gerenciar endereços com autentica
 
 ### 1. Clonar o Repositório
 ```bash
-git clone <url-do-repo>
+git clone https://github.com/dermack/RotaExata.git
 cd rotaexata
 ```
 
