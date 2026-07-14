@@ -1,21 +1,32 @@
 import jwt from 'jsonwebtoken';
 
+function sendError(res, status, message) {
+  return res.status(status).json({ error: message });
+}
+
 export function authMiddleware(req, res, next) {
   const authHeader = req.headers.authorization;
 
   if (!authHeader) {
-    return res.status(401).json({ error: 'Token não informado' });
+    return sendError(res, 401, 'Token não informado');
   }
 
-  const token = authHeader.split(' ')[1];
+  const [scheme, token] = authHeader.split(' ');
+
+  if (scheme !== 'Bearer' || !token) {
+    return sendError(res, 401, 'Token inválido');
+  }
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
-    req.user = { id: decoded.id };
+    if (!decoded?.id) {
+      return sendError(res, 401, 'Token inválido');
+    }
 
+    req.user = { id: decoded.id };
     return next();
   } catch {
-    return res.status(401).json({ error: 'Token inválido' });
+    return sendError(res, 401, 'Token inválido');
   }
 }
