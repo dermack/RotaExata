@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import { create, update, remove, findByUser, findById, createAddressLog } from '../repositories/addressRepository.js';
+import { create, update, remove, findByUser, findById, createAddressLog, withTransaction } from '../repositories/addressRepository.js';
 
 function sendError(res, status, message) {
   return res.status(status).json({ error: message });
@@ -120,14 +120,14 @@ export async function deleteAddress(req, res) {
       return sendError(res, 403, 'Acesso negado');
     }
 
-    await remove(id);
+    await withTransaction(async (client) => {
+      await client.query(
+        `INSERT INTO logs (address_id, user_id, action, old_data, new_data)
+         VALUES ($1, $2, $3, $4, $5)`,
+        [id, userId, 'DELETE', JSON.stringify(address), null]
+      );
 
-    await createAddressLog({
-      address_id: id,
-      user_id: userId,
-      action: 'DELETE',
-      old_data: address,
-      new_data: null
+      await client.query('DELETE FROM addresses WHERE id = $1', [id]);
     });
 
     return res.json({ message: 'Endereço removido com sucesso' });
