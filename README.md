@@ -315,3 +315,11 @@ docker-compose up
 ## Licença
 
 MIT
+
+## Observações
+
+Para o tipo de campo na tabela logs, decidi utilizar JSONB para gravar o antes e depois. Isso permite fazer pesquisas avançadas como:
+```bash
+SELECT old_data->>'city' AS cidade FROM logs
+```
+Que consegue buscar os dados do json salvo no campo.
